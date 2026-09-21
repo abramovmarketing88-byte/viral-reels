@@ -7,10 +7,13 @@ Cursor Agent Skill: сценарии виральных вертикальных
 | Файл | Зачем |
 |------|--------|
 | [`SKILL.md`](SKILL.md) | конвейер, таблица, CTA, запреты |
-| [`reference.md`](reference.md) | хуки, OCR-зоны, ИИ-кадры, caption |
-| [`examples.md`](examples.md) | эталон и антипаттерн |
+| [`reference.md`](reference.md) | хуки, OCR-зоны, воронка, ИИ-кадры |
+| [`examples.md`](examples.md) | эталон, воронка, антипаттерн |
+| [`scripts/validate.py`](scripts/validate.py) | проверка пакета (execute) |
+| [`fixtures/good.md`](fixtures/good.md) | пакет, который обязан пройти валидатор |
+| [`fixtures/bad.md`](fixtures/bad.md) | брак, который обязан упасть |
 
-Не рендерит видео (это `heygen-video`) и не собирает пакет YouTube Studio (`youtube-publish`).
+Не рендерит видео (`heygen-video`). Не пакет YouTube Studio (`youtube-publish`). Не воронка лендинга (`selling-landing`).
 
 ## Install
 
@@ -22,4 +25,11 @@ gh skill install abramovmarketing88-byte/viral-reels --agent cursor --scope user
 
 ## Вызов
 
-В чате: «сценарий рилса», «запусти режим генерации сценария для темы: …», `/viral-reels`.
+«сценарий рилса», «запусти режим генерации сценария для темы: …», «воронка рилсов», `/viral-reels`.
+
+## Проверка пакета
+
+```bash
+python3 scripts/validate.py fixtures/good.md   # OK
+python3 scripts/validate.py fixtures/bad.md    # FAIL
+```
