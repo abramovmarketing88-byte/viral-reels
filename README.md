@@ -6,8 +6,8 @@ Cursor Agent Skill: сценарии виральных вертикальных
 
 | Файл | Зачем |
 |------|--------|
-| [`SKILL.md`](SKILL.md) | конвейер, таблица, CTA, запреты |
-| [`reference.md`](reference.md) | хуки, OCR-зоны, воронка, ИИ-кадры |
+| [`SKILL.md`](SKILL.md) | конвейер, склейка смысла, таблица, CTA |
+| [`reference.md`](reference.md) | хуки, OCR, живой прогон «при чём это» |
 | [`examples.md`](examples.md) | эталон, воронка, антипаттерн |
 | [`scripts/validate.py`](scripts/validate.py) | проверка пакета (execute) |
 | [`fixtures/good.md`](fixtures/good.md) | пакет, который обязан пройти валидатор |

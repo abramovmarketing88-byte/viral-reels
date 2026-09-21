@@ -38,6 +38,19 @@ FORBIDDEN = [
     "не забудьте подписаться",
 ]
 TRASH_TAGS = ["#fyp", "#viral", "#длятебя", "#рекомендации", "#xyzbca"]
+JARGON = [
+    "конверсия",
+    "креатив",
+    "хайп",
+    "фильтр",
+    "ctr",
+    "выше рынка",
+    "из показа",
+    "залип",
+    "вразброс",
+    "баннерн",
+    "когнитив",
+]
 
 
 def to_sec(m: int, s: int) -> int:
@@ -49,6 +62,31 @@ def extract_seo(text: str) -> str | None:
     if not m:
         return None
     return re.sub(r"\s+", " ", m.group(1)).strip().strip("*").strip()
+
+
+def viewer_facing(text: str) -> str:
+    """ASR + OCR + caption + subtitles + title. Not director jargon columns."""
+    chunks: list[str] = []
+    for rx in (CAPTION_RE, TITLE_RE):
+        m = rx.search(text)
+        if m:
+            chunks.append(m.group(1))
+    sub = re.search(r"Субтитры:\s*(.+)$", text, re.M)
+    if sub:
+        chunks.append(sub.group(1))
+    for line in text.splitlines():
+        raw = line.strip()
+        if not raw.startswith("|"):
+            continue
+        cells = [c.strip() for c in raw.strip("|").split("|")]
+        if len(cells) >= 4 and TIMING_RE.match("| " + cells[0] + " |"):
+            chunks.append(cells[2])
+            chunks.append(cells[3])
+    asr_lines = re.findall(r"ASR:\s*(.+)$", text, re.M | re.I)
+    ocr_lines = re.findall(r"OCR:\s*(.+)$", text, re.M | re.I)
+    chunks.extend(asr_lines)
+    chunks.extend(ocr_lines)
+    return "\n".join(chunks)
 
 
 def parse_timings(text: str) -> list[tuple[int, int]]:
@@ -110,6 +148,34 @@ def check(text: str) -> list[str]:
     for phrase in FORBIDDEN:
         if phrase in lower:
             errors.append(f"запрещённая фраза: {phrase!r}")
+
+    viewer = viewer_facing(text).lower()
+    for word in JARGON:
+        if word in viewer:
+            errors.append(f"сложное/рекламное слово в речи или на экране: {word!r}")
+
+    seo_l = (seo or "").lower()
+    if re.search(r"авито|объявлен", seo_l) and re.search(
+        r"\bролики\b|\bчужие ролики\b", viewer
+    ):
+        errors.append(
+            "смешение объекта: тема про объявления, в голосе «ролики»"
+        )
+
+    for line in text.splitlines():
+        raw = line.strip()
+        if not raw.startswith("|"):
+            continue
+        cells = [c.strip() for c in raw.strip("|").split("|")]
+        if len(cells) < 4 or not TIMING_RE.match("| " + cells[0] + " |"):
+            continue
+        asr = cells[2].strip()
+        low = asr.lower()
+        if re.match(r"^не [^.!?]{1,40}[.!?]?$", low) and "шаг" not in low:
+            errors.append(
+                f"обрубок контраста в ASR: {asr!r} — закрой в той же фразе "
+                "(«конкретные шаги, не просто …»)"
+            )
 
     for tag in TRASH_TAGS:
         if tag in lower:
